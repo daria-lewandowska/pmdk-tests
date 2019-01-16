@@ -79,7 +79,7 @@ std::unique_ptr<ActionsObj> PmemobjReservePublishTest::ReserveInThread() {
 
   std::unique_ptr<ActionsObj> actions =
       std::make_unique<ActionsObj>(publish_acts);
-  return std::move(actions);
+  return actions;
 }
 
 std::unique_ptr<ActionsObj>
@@ -103,7 +103,7 @@ PmemobjReservePublishTest::ReserveWithCancelInThread() {
 
   std::unique_ptr<ActionsObj> actions =
       std::make_unique<ActionsObj>(publish_acts, cancel_acts);
-  return std::move(actions);
+  return actions;
 }
 
 std::unique_ptr<ActionsObj> PmemobjReservePublishTest::DeferFreeInThread() {
@@ -126,7 +126,7 @@ std::unique_ptr<ActionsObj> PmemobjReservePublishTest::DeferFreeInThread() {
 
   std::unique_ptr<ActionsObj> actions =
       std::make_unique<ActionsObj>(publish_acts);
-  return std::move(actions);
+  return actions;
 }
 
 std::unique_ptr<ActionsObj> PmemobjReservePublishTest::XReserveInThread() {
@@ -140,7 +140,7 @@ std::unique_ptr<ActionsObj> PmemobjReservePublishTest::XReserveInThread() {
 
   std::unique_ptr<ActionsObj> actions =
       std::make_unique<ActionsObj>(publish_acts);
-  return std::move(actions);
+  return actions;
 }
 
 int PmemobjReservePublishTest::TxPublishInThread(TestObj &obj) {

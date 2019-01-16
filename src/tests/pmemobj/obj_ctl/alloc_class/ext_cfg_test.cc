@@ -104,7 +104,7 @@ INSTANTIATE_TEST_CASE_P(
             pobj_alloc_class_desc{512, 0, 1023, POBJ_HEADER_COMPACT,
                                   auto_class_id}),
         ::testing::Values(ExternalCfg::FROM_ENV_VAR,
-                          ExternalCfg::FROM_CFG_FILE)));
+                          ExternalCfg::FROM_CFG_FILE)),);
 
 /**
  * PMEMOBJ_CTL_ALLOC_CLASS_FROM_EXT_CFG_NEG
@@ -148,4 +148,4 @@ INSTANTIATE_TEST_CASE_P(
             pobj_alloc_class_desc{128, 0, 4096, POBJ_HEADER_COMPACT, 128},
             pobj_alloc_class_desc{1024, 0, 1024, MAX_POBJ_HEADER_TYPES, 128}),
         ::testing::Values(ExternalCfg::FROM_ENV_VAR,
-                          ExternalCfg::FROM_CFG_FILE)));
+                          ExternalCfg::FROM_CFG_FILE)),);

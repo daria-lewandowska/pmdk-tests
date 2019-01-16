@@ -317,7 +317,7 @@ INSTANTIATE_TEST_CASE_P(DifferentHdrType,
                         ObjCtlAllocateFromCustomAllocClassParamTest,
                         ::testing::Values(POBJ_HEADER_COMPACT,
                                           POBJ_HEADER_LEGACY,
-                                          POBJ_HEADER_NONE));
+                                          POBJ_HEADER_NONE),);
 
 /**
  * PMEMOBJ_CTL_CHECK_HDR_METADATA
@@ -419,7 +419,7 @@ INSTANTIATE_TEST_CASE_P(
                                          alloc_class_size{512, 1024}),
                        ::testing::Values(POBJ_HEADER_COMPACT,
                                          POBJ_HEADER_LEGACY,
-                                         POBJ_HEADER_NONE)));
+                                         POBJ_HEADER_NONE)),);
 
 /**
  * PMEMOBJ_CTL_CUSTOM_ALLOCATION_CLASS
@@ -518,7 +518,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_pair(in_args{{512, 0, 1024, POBJ_HEADER_COMPACT,
                                          (numeric_limits<unsigned>::max)()},
                                         Scenario::SET_GET},
-                                out_args{-1, ERANGE})));
+                                out_args{-1, ERANGE})),);
 INSTANTIATE_TEST_CASE_P(
     InvalidUnitSize, ObjCtlAllocClassParamTest,
     ::testing::Values(make_pair(in_args{{0, 0, 1024, POBJ_HEADER_COMPACT, 128},
@@ -527,7 +527,7 @@ INSTANTIATE_TEST_CASE_P(
                       make_pair(in_args{{PMEMOBJ_MAX_ALLOC_SIZE + 1, 0, 1024,
                                          POBJ_HEADER_COMPACT, 128},
                                         Scenario::SET},
-                                out_args{-1, EINVAL})));
+                                out_args{-1, EINVAL})),);
 INSTANTIATE_TEST_CASE_P(
     InvalidAlignment, ObjCtlAllocClassParamTest,
     ::testing::Values(
@@ -551,27 +551,27 @@ INSTANTIATE_TEST_CASE_P(
                   out_args{-1, EINVAL}),
         make_pair(in_args{{1024, 2048, 1024, POBJ_HEADER_COMPACT, 128},
                           Scenario::SET},
-                  out_args{-1, EINVAL})));
+                  out_args{-1, EINVAL})),);
 INSTANTIATE_TEST_CASE_P(
     InvalidUnitsPerBlock, ObjCtlAllocClassParamTest,
     ::testing::Values(make_pair(in_args{{512, 0, 0, POBJ_HEADER_COMPACT, 128},
                                         Scenario::SET},
-                                out_args{-1, EINVAL})));
+                                out_args{-1, EINVAL})),);
 INSTANTIATE_TEST_CASE_P(InvalidHeaderType, ObjCtlAllocClassParamTest,
                         ::testing::Values(make_pair(
                             in_args{{512, 0, 1024, MAX_POBJ_HEADER_TYPES, 128},
                                     Scenario::SET},
-                            out_args{-1, EINVAL})));
+                            out_args{-1, EINVAL})),);
 INSTANTIATE_TEST_CASE_P(
     OverwriteDefaultAllocationClass, ObjCtlAllocClassParamTest,
     ::testing::Values(make_pair(in_args{{512, 0, 1024, POBJ_HEADER_COMPACT, 1},
                                         Scenario::SET},
-                                out_args{-1, EEXIST})));
+                                out_args{-1, EEXIST})),);
 INSTANTIATE_TEST_CASE_P(
     RetrieveInfoFromUnexistingClass, ObjCtlAllocClassParamTest,
     ::testing::Values(make_pair(
         in_args{{512, 0, 1024, POBJ_HEADER_COMPACT, 128}, Scenario::GET},
-        out_args{-1, ENOENT})));
+        out_args{-1, ENOENT})),);
 INSTANTIATE_TEST_CASE_P(
     CreateCustomAllocationClass, ObjCtlAllocClassParamTest,
     ::testing::Values(
@@ -613,4 +613,4 @@ INSTANTIATE_TEST_CASE_P(
                   out_args{0, 0}),
         make_pair(in_args{{512, 0, 1024, POBJ_HEADER_LEGACY, 128},
                           Scenario::SET_GET},
-                  out_args{0, 0})));
+                  out_args{0, 0})),);

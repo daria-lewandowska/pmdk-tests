@@ -63,7 +63,7 @@ INSTANTIATE_TEST_CASE_P(
                       PoolArgs{PoolType::Blk,
                                {{Option::BSize, OptionType::Short, "8"},
                                 {Option::Mode, OptionType::Short, "444"}}},
-                      PoolArgs{PoolType::Log}, PoolArgs{PoolType::Obj}));
+                      PoolArgs{PoolType::Log}, PoolArgs{PoolType::Obj}),);
 
 /**
  * PmempoolCreateValidInheritTests.PMEMPOOL_INHERIT_PROPERTIES
@@ -98,7 +98,7 @@ INSTANTIATE_TEST_CASE_P(
         PoolInherit{{PoolType::Obj},
                     {PoolType::Log,
                      {{Option::Inherit, OptionType::Long,
-                       local_config->GetTestDir() + "pool.file"}}}}));
+                       local_config->GetTestDir() + "pool.file"}}}}),);
 
 /**
  * PmempoolCreateValidPoolsetTests.PMEMPOOL_POOLSET
@@ -133,4 +133,4 @@ INSTANTIATE_TEST_CASE_P(
             Poolset{local_config->GetTestDir(), {{"PMEMPOOLSET", "20M"}}}},
         PoolsetArgs{{PoolType::Obj},
                     Poolset{local_config->GetTestDir(),
-                            {{"PMEMPOOLSET", "20M"}, {"REPLICA", "20M"}}}}));
+                            {{"PMEMPOOLSET", "20M"}, {"REPLICA", "20M"}}}}),);
