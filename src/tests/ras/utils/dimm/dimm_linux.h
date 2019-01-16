@@ -30,53 +30,65 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PMDK_TESTS_SRC_UTILS_CONFIGXML_RAS_CONFIGURATION_H_
-#define PMDK_TESTS_SRC_UTILS_CONFIGXML_RAS_CONFIGURATION_H_
+#ifndef PMDK_TESTS_SRC_RAS_UTILS_DIMM_LINUX_H_
+#define PMDK_TESTS_SRC_RAS_UTILS_DIMM_LINUX_H_
 
-#include "configXML/read_config.h"
-#include "shell/i_shell.h"
+#include <ndctl/libdaxctl.h>
+#include <ndctl/libndctl.h>
+#include <sys/stat.h>
+#include "api_c/api_c.h"
 
-class DUT final {
+class Dimm final {
  private:
-  std::string address_;
-  std::string power_cycle_command_;
-  std::string bin_dir_;
-  IShell ishell_{address_};
+  struct ndctl_dimm *dimm_ = nullptr;
+  std::string uid_;
 
  public:
-  DUT() = delete;
-  DUT(const std::string& address, const std::string& power_cycle_command,
-      const std::string& bin_dir);
-  DUT(DUT&& temp)
-      : address_(temp.address_),
-        power_cycle_command_(temp.power_cycle_command_),
-        bin_dir_(temp.bin_dir_){};
-  const std::string& GetBinDir() const {
-    return this->bin_dir_;
+  Dimm(struct ndctl_dimm *dimm, const char *uid) : dimm_(dimm), uid_(uid) {
   }
-  Output<char> ExecuteCmd(std::string cmd) {
-    return ishell_.ExecuteCommand(cmd);
-  }
-  Output<char> PowerCycle() {
-    IShell i_shell;
-    return i_shell.ExecuteCommand(power_cycle_command_);
+
+  int GetShutdownCount() const;
+  int InjectUnsafeShutdown() const;
+
+  const std::string &GetUid() const {
+    return this->uid_;
   }
 };
 
-class RASConfigurationCollection final
-    : public ReadConfig<RASConfigurationCollection> {
+class DimmNamespace final {
  private:
-  friend class ReadConfig<RASConfigurationCollection>;
-  int FillConfigFields(pugi::xml_node&& root);
-  std::vector<DUT> duts_collection_;
+  bool is_dax_ = false;
+  std::string test_dir_;
+  std::vector<Dimm> dimms_;
+  ndctl_ctx *ctx_ = nullptr;
+
+  ndctl_interleave_set *GetInterleaveSet(ndctl_ctx *ctx,
+                                         const struct stat64 &st);
 
  public:
-  DUT& GetDUT(int idx) {
-    return duts_collection_.at(idx);
+  DimmNamespace(const std::string &mountpoint);
+
+  std::string GetTestDir() const {
+    return this->test_dir_;
   }
-  DUT& operator[](std::size_t idx) {
-    return this->duts_collection_.at(idx);
+
+  Dimm &operator[](std::size_t idx) {
+    return this->dimms_.at(idx);
   }
+
+  const std::vector<Dimm>::const_iterator begin() const noexcept {
+    return dimms_.cbegin();
+  }
+
+  const std::vector<Dimm>::const_iterator end() const noexcept {
+    return dimms_.cend();
+  }
+
+  size_t GetSize() const {
+    return dimms_.size();
+  }
+
+  ~DimmNamespace();
 };
 
-#endif  // !PMDK_TESTS_SRC_UTILS_CONFIGXML_RAS_CONFIGURATION_H_
+#endif  // !PMDK_TESTS_SRC_RAS_UTILS_DIMM_LINUX_H_

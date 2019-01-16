@@ -30,54 +30,31 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "api_c/api_c.h"
+#include "exit_codes.h"
+#include "gtest/gtest.h"
 #include "ras_configuration.h"
 
-DUT::DUT(const std::string& address, const std::string& power_cycle_command,
-         const std::string& bin_dir)
-    : address_(address),
-      power_cycle_command_(power_cycle_command),
-      bin_dir_(bin_dir) {
-  if (0 != ishell_.ExecuteCommand("test -d " + bin_dir_).GetExitCode()) {
-    throw std::invalid_argument(ishell_.GetLastOutput().GetContent());
-  }
-}
+std::unique_ptr<std::string> gtest_filter{new std::string{}};
+std::unique_ptr<RASConfigurationCollection> ras_config{
+    new RASConfigurationCollection()};
 
-int RASConfigurationCollection::FillConfigFields(pugi::xml_node&& root) {
-  IShell shell;
-  std::string address;
-  std::string port = "22";
-  size_t pos;
-  int ret = -1;
-
-  for (auto&& it : root.children("RASConfiguration")) {
-    ret = 0;
-    address = it.child("address").text().as_string();
-    pos = address.find_last_of(":");
-
-    if (pos != std::string::npos) {
-      port = address.substr(pos + 1);
-      address = address.substr(0, pos - 1);
-    }
-
-    if (shell.ExecuteCommand("ssh " + address + " -p " + port + " exit")
-            .GetExitCode() != 0) {
-      std::cerr << shell.GetLastOutput().GetContent() << std::endl;
+int main(int argc, char** argv) {
+  try {
+    if (ras_config->ReadConfigFile() != 0) {
       return -1;
     }
-    try {
-      duts_collection_.emplace_back(
-          DUT(address + " -p " + port,
-              it.child("powerCycleCommand").text().as_string(),
-              it.child("binDir").text().as_string()));
-    } catch (const std::invalid_argument& e) {
-      std::cerr << e.what() << std::endl;
-      return -1;
-    }
-  }
 
-  if (ret == -1) {
-    std::cerr << "RASConfiguration node does not exist" << std::endl;
-  }
+    ::testing::InitGoogleTest(&argc, argv);
 
-  return ret;
+    /* Pass gtest_filter to managed test binary */
+    gtest_filter->assign(::testing::GTEST_FLAG(filter));
+    ::testing::GTEST_FLAG(filter) = "*";
+
+    return RUN_ALL_TESTS();
+
+  } catch (const std::exception& e) {
+    std::cerr << "Exception was caught: " << e.what() << std::endl;
+    return 1;
+  }
 }

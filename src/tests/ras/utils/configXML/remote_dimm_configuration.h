@@ -33,9 +33,11 @@
 #ifndef PMDK_TESTS_SRC_UTILS_CONFIGXML_REMOTE_DIMM_CONFIGURATION_H_
 #define PMDK_TESTS_SRC_UTILS_CONFIGXML_REMOTE_DIMM_CONFIGURATION_H_
 
+#ifdef __linux__
+
 #include "api_c/api_c.h"
 #include "configXML/read_config.h"
-#include "dimm.h"
+#include "dimm/dimm.h"
 #include "pugixml.hpp"
 #include "shell/i_shell.h"
 
@@ -90,9 +92,19 @@ class RemoteDimmConfigurationsCollection final
   std::vector<RemoteDimmNode> remote_configurations_;
 
  public:
-  const RemoteDimmNode &GetNode(int idx) const {
+  const RemoteDimmNode &operator[](int idx) const {
     return remote_configurations_.at(idx);
   }
+
+  const std::vector<RemoteDimmNode>::const_iterator begin() const noexcept {
+    return remote_configurations_.cbegin();
+  }
+
+  const std::vector<RemoteDimmNode>::const_iterator end() const noexcept {
+    return remote_configurations_.cend();
+  }
 };
+
+#endif  // __linux__
 
 #endif  // !PMDK_TESTS_SRC_UTILS_CONFIGXML_REMOTE_DIMM_CONFIGURATION_H_

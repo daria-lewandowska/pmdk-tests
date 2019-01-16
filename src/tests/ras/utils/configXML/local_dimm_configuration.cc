@@ -32,15 +32,15 @@
 
 #include "local_dimm_configuration.h"
 
-int LocalDimmConfiguration::SetDimmCollections(pugi::xml_node &&node) {
+int LocalDimmConfiguration::SetDimmNamespaces(pugi::xml_node &&node) {
   int ret = -1;
 
   for (auto &&it : node.children("mountPoint")) {
     ret = 0;
     try {
-      DimmCollection temp = DimmCollection(it.text().get());
-      dimm_collections_.emplace_back(std::move(temp));
-    } catch (std::exception e) {
+      DimmNamespace temp = DimmNamespace(it.text().get());
+      dimm_namespaces_.emplace_back(std::move(temp));
+    } catch (const std::invalid_argument &e) {
       std::cerr << e.what() << std::endl;
       return -1;
     }
@@ -62,7 +62,7 @@ int LocalDimmConfiguration::FillConfigFields(pugi::xml_node &&root) {
   }
 
   if (SetTestDir(root, test_dir_) != 0 ||
-      SetDimmCollections(root.child("dimmConfiguration")) != 0) {
+      SetDimmNamespaces(root.child("dimmConfiguration")) != 0) {
     return -1;
   }
 

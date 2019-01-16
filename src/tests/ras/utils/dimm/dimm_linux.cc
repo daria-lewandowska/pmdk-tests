@@ -30,13 +30,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "dimm.h"
+#ifdef __linux__
+
 #include <linux/limits.h>
 #include <cstring>
+#include "dimm.h"
+
+#define FOREACH_BUS_REGION_NAMESPACE(ctx, bus, region, ndns)    \
+  ndctl_bus_foreach(ctx, bus) ndctl_region_foreach(bus, region) \
+      ndctl_namespace_foreach(region, ndns)
 
 const int USC_VALID_FLAG = 1 << 5;
 
-int Dimm::GetShutdownCount() {
+int Dimm::GetShutdownCount() const {
   struct ndctl_cmd *cmd = ndctl_dimm_cmd_new_smart(dimm_);
 
   if (ndctl_cmd_submit(cmd)) {
@@ -50,7 +56,7 @@ int Dimm::GetShutdownCount() {
   return ndctl_cmd_smart_get_shutdown_count(cmd);
 }
 
-int Dimm::InjectUnsafeShutdown() {
+int Dimm::InjectUnsafeShutdown() const {
   struct ndctl_cmd *cmd = ndctl_dimm_cmd_new_ack_shutdown_count(dimm_);
 
   if (ndctl_cmd_submit(cmd)) {
@@ -58,7 +64,7 @@ int Dimm::InjectUnsafeShutdown() {
   }
 
   if (ndctl_cmd_get_firmware_status(cmd)) {
-    std::cerr << "dimm: " << ndctl_dimm_get_devname(dimm_)
+    std::cerr << "DIMM: " << ndctl_dimm_get_devname(dimm_)
               << " Latch System Shutdown setting failed" << std::endl;
     return -1;
   }
@@ -76,8 +82,8 @@ int Dimm::InjectUnsafeShutdown() {
   return 0;
 }
 
-ndctl_interleave_set *DimmCollection::GetInterleaveSet(ndctl_ctx *ctx,
-                                                       struct stat64 st) {
+ndctl_interleave_set *DimmNamespace::GetInterleaveSet(ndctl_ctx *ctx,
+                                                      const struct stat64 &st) {
   struct ndctl_bus *bus;
   struct ndctl_region *region;
   struct ndctl_namespace *ndns;
@@ -129,7 +135,7 @@ ndctl_interleave_set *DimmCollection::GetInterleaveSet(ndctl_ctx *ctx,
   return nullptr;
 }
 
-DimmCollection::DimmCollection(const std::string &mountpoint) {
+DimmNamespace::DimmNamespace(const std::string &mountpoint) {
   ndctl_interleave_set *set;
   struct stat64 st;
 
@@ -164,22 +170,23 @@ DimmCollection::DimmCollection(const std::string &mountpoint) {
   }
 
   if (!is_dax_) {
-    if (!ApiC::DirectoryExists((mountpoint_ + SEPARATOR + "pmdk_tests")) &&
-        ApiC::CreateDirectoryT(
-            (mountpoint_ + SEPARATOR + "pmdk_tests").c_str()) != 0) {
-      throw std::invalid_argument("");
+    test_dir_ = mountpoint + SEPARATOR + "pmdk_tests" + SEPARATOR;
+    if (!ApiC::DirectoryExists(test_dir_) &&
+        ApiC::CreateDirectoryT(test_dir_) != 0) {
+      throw std::invalid_argument("Could not create: " + test_dir_);
     }
 
-    mountpoint_ = mountpoint + SEPARATOR + "pmdk_tests" + SEPARATOR;
   } else {
-    mountpoint_ = mountpoint;
+    test_dir_ = mountpoint + SEPARATOR;
   }
 }
 
-DimmCollection::~DimmCollection() {
+DimmNamespace::~DimmNamespace() {
   if (!ctx_) {
     ndctl_unref(ctx_);
   }
 
   ctx_ = nullptr;
 }
+
+#endif  // __linux__
