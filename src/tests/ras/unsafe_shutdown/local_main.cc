@@ -30,57 +30,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef PMDK_TESTS_SRC_RAS_UTILS_DIMM_H_
-#define PMDK_TESTS_SRC_RAS_UTILS_DIMM_H_
+#include "configXML/local_dimm_configuration.h"
+#include "exit_codes.h"
+#include "gtest/gtest.h"
+#include "inject_manager/inject_manager.h"
+#include "shell/i_shell.h"
+#include "test_phase/local_test_phase.h"
 
-#include <ndctl/libdaxctl.h>
-#include <ndctl/libndctl.h>
-#include <stdio.h>
-#include <sys/stat.h>
-#include <exception>
-#include <iostream>
-#include <string>
-#include <vector>
-#include "api_c/api_c.h"
+bool PartiallyPassed() {
+  ::testing::UnitTest *ut = ::testing::UnitTest::GetInstance();
+  return ut->successful_test_count() > 0 && ut->failed_test_count() > 0;
+}
 
-#define FOREACH_BUS_REGION_NAMESPACE(ctx, bus, region, ndns)    \
-  ndctl_bus_foreach(ctx, bus) ndctl_region_foreach(bus, region) \
-      ndctl_namespace_foreach(region, ndns)
+int main(int argc, char **argv) {
+  int ret = 0;
+  try {
+    ::testing::InitGoogleTest(&argc, argv);
+    LocalTestPhase &test_phase = LocalTestPhase::GetInstance();
+    test_phase.ParseCmdArgs(argc, argv);
 
-class Dimm final {
- private:
-  struct ndctl_dimm *dimm_ = nullptr;
-  std::string uid_;
+    /* Modify --gtest_filter flag to run only tests from specific phase" */
+    ::testing::GTEST_FLAG(filter) =
+        "*" + test_phase.GetPhaseName() + "*" + ::testing::GTEST_FLAG(filter);
 
- public:
-  Dimm(struct ndctl_dimm *dimm, const char *uid) : dimm_(dimm), uid_(uid) {
+    if ((ret = test_phase.RunPreTestAction()) == 0) {
+      ret = RUN_ALL_TESTS();
+    }
+    if (test_phase.RunPostTestAction() != 0) {
+      return 1;
+    }
+
+    if (PartiallyPassed()) {
+      ret = exit_codes::partially_passed;
+    }
+
+  } catch (const std::exception &e) {
+    std::cerr << "Exception was caught: " << e.what() << std::endl;
+    ret = 1;
   }
 
-  int GetShutdownCount();
-  int InjectUnsafeShutdown();
-
-  const std::string &GetUid() const {
-    return this->uid_;
-  }
-};
-
-class DimmCollection final {
- private:
-  bool is_dax_ = false;
-  ndctl_ctx *ctx_ = nullptr;
-  std::string mountpoint_;
-  std::vector<Dimm> dimms_;
-
-  ndctl_interleave_set *GetInterleaveSet(ndctl_ctx *ctx, struct stat64 st);
-
- public:
-  DimmCollection(const std::string &mountpoint);
-
-  Dimm &operator[](std::size_t idx) {
-    return this->dimms_.at(idx);
-  }
-
-  ~DimmCollection();
-};
-
-#endif  // !PMDK_TESTS_SRC_RAS_UTILS_DIMM_H_
+  return ret;
+}

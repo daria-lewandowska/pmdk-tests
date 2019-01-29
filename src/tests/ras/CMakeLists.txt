@@ -28,26 +28,8 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# RAS
-set(DIR ${CMAKE_CURRENT_LIST_DIR})
-set(PREFIX_FILTER "")
-
-file(GLOB_RECURSE ras_SRC
-	"${DIR}/*.h"
-	"${DIR}/*.cc")
-
-include_directories(${Libndctl_INCLUDE_DIRS})
-link_directories(${Libndctl_LIBRARY_DIRS})
-include_directories(${Libdaxctl_INCLUDE_DIRS})
-link_directories(${Libdaxctl_LIBRARY_DIRS})
-
-include_directories(src/tests/ras/utils)
-
-add_executable(RAS
-	${ras_SRC})
-
-set_source_groups("${PREFIX_FILTER}" ${ras_SRC})
-
-target_link_libraries(RAS Utils libgtest ${Libdaxctl_LIBRARIES} ${Libndctl_LIBRARIES})
-add_dependencies(RAS Utils libgtest)
+include(${CMAKE_CURRENT_LIST_DIR}/utils/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/unsafe_shutdown/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/us_remote_agent/CMakeLists.txt)
+include(${CMAKE_CURRENT_LIST_DIR}/us_test_controller/CMakeLists.txt)
 

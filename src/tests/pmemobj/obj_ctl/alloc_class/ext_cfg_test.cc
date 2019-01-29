@@ -77,11 +77,11 @@ TEST_P(ObjCtlExtCfgPosTest, PMEMOBJ_CTL_ALLOC_CLASS_FROM_EXT_CFG_POS) {
   /* Step 6 */
   EXPECT_TRUE(AllocClassUtils::IsAllocClassValid(write_arg_, read_arg));
   /* Step 7 */
-  EXPECT_EQ(0, pmemobj_xalloc(
-                   pop, &oid,
-                   read_arg.unit_size -
-                       AllocClassUtils::hdrs[write_arg_.header_type].size,
-                   0, POBJ_CLASS_ID(write_arg_.class_id), nullptr, nullptr))
+  EXPECT_EQ(
+      0, pmemobj_xalloc(
+             pop, &oid, read_arg.unit_size -
+                            AllocClassUtils::hdrs[write_arg_.header_type].size,
+             0, POBJ_CLASS_ID(write_arg_.class_id), nullptr, nullptr))
       << pmemobj_errormsg();
   /* Step 8 */
   EXPECT_FALSE(OID_IS_NULL(oid));
@@ -102,9 +102,10 @@ INSTANTIATE_TEST_CASE_P(
             pobj_alloc_class_desc{512, 0, 1023, POBJ_HEADER_LEGACY,
                                   auto_class_id},
             pobj_alloc_class_desc{512, 0, 1023, POBJ_HEADER_COMPACT,
-                                  auto_class_id}),
+                                  auto_class_id},
+            pobj_alloc_class_desc{128, 0, 4096, POBJ_HEADER_COMPACT, 128}),
         ::testing::Values(ExternalCfg::FROM_ENV_VAR,
-                          ExternalCfg::FROM_CFG_FILE)));
+                          ExternalCfg::FROM_CFG_FILE)),);
 
 /**
  * PMEMOBJ_CTL_ALLOC_CLASS_FROM_EXT_CFG_NEG
@@ -145,7 +146,6 @@ INSTANTIATE_TEST_CASE_P(
             pobj_alloc_class_desc{1024, 0, 0, POBJ_HEADER_COMPACT,
                                   auto_class_id},
             pobj_alloc_class_desc{1024, 0, 0, POBJ_HEADER_COMPACT, 128},
-            pobj_alloc_class_desc{128, 0, 4096, POBJ_HEADER_COMPACT, 128},
             pobj_alloc_class_desc{1024, 0, 1024, MAX_POBJ_HEADER_TYPES, 128}),
         ::testing::Values(ExternalCfg::FROM_ENV_VAR,
-                          ExternalCfg::FROM_CFG_FILE)));
+                          ExternalCfg::FROM_CFG_FILE)),);

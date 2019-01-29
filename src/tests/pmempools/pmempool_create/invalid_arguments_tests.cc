@@ -132,7 +132,7 @@ INSTANTIATE_TEST_CASE_P(
                  {{Option::BSize, OptionType::Short, "512"},
                   {Option::Size, OptionType::Long, "15M"}},
                  "error: size must be >= " + std::to_string(PMEMBLK_MIN_POOL) +
-                     " bytes"}));
+                     " bytes"}),);
 
 /**
  * InvalidInheritTests.PMEMPOOL_INHERIT_PROPERTIES
@@ -163,7 +163,7 @@ INSTANTIATE_TEST_CASE_P(PmempoolCreateParam, InvalidInheritTests,
                                local_config->GetTestDir() + "pool.file"}},
                              "error: size must be >= " +
                                  std::to_string(PMEMOBJ_MIN_POOL) +
-                                 " bytes"}}));
+                                 " bytes"}}),);
 
 /**
  * InvalidArgumentsPoolsetTests.PMEMPOOL_POOLSET
@@ -230,4 +230,4 @@ INSTANTIATE_TEST_CASE_P(
              {{Option::BSize, OptionType::Long, "512"}},
              " -- replication not supported\nerror: creating pool file failed"},
             Poolset{local_config->GetTestDir(),
-                    {{"PMEMPOOLSET", "20M"}, {"REPLICA", "20M"}}}}));
+                    {{"PMEMPOOLSET", "20M"}, {"REPLICA", "20M"}}}}),);

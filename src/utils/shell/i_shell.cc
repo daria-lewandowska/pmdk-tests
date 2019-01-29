@@ -36,11 +36,15 @@ Output<char> IShell::ExecuteCommand(const std::string &cmd) {
 #ifdef _WIN32
   std::string command = "PowerShell -Command " + cmd + " 2>&1";
 #else
-  std::string command =
-      "{ " + (address_.empty()
-                  ? ""
-                  : "ssh -o PasswordAuthentication=no " + address_ + " ") +
-      cmd + "; } 2>&1";
+
+  std::string command;
+  if (!address_.empty()) {
+    command = "{ ssh -o PasswordAuthentication=no " + address_ + " \"" + cmd +
+              "\"; } 2>&1";
+  } else {
+    command = "{ " + cmd + "; } 2>&1";
+  }
+
 #endif  // _WIN32
   std::unique_ptr<FILE, PipeDeleter> pipe(popen(command.c_str(), "r"));
 
